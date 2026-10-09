@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RecetApp - Recetas de Postres y Piqueos</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧁</text></svg>">
+</head>
+<body>
+
+  <div id="toast" class="toast"></div>
+
+  <!-- ============ LANDING ============ -->
+  <div id="landing" class="landing">
+    <button class="dark-toggle" onclick="toggleDarkMode()" id="darkToggleLanding" title="Modo oscuro" style="position:absolute;top:20px;right:20px;z-index:10;background:rgba(255,255,255,0.2);backdrop-filter:blur(10px);">🌙</button>
+    <button class="lang-toggle" onclick="toggleLanguage()" id="langToggleLanding" title="Language / Idioma" style="position:absolute;top:20px;left:20px;z-index:10;background:rgba(255,255,255,0.2);backdrop-filter:blur(10px);">ES</button>
+    <div class="floating-emojis">
+      <span>🧁</span><span>🍰</span><span>🍪</span>
+      <span>🍩</span><span>🍫</span><span>🍮</span>
+    </div>
+    <div class="landing-card">
+      <div class="landing-logo">🧁</div>
+      <h1 class="landing-title">RecetApp</h1>
+      <p class="landing-subtitle" data-i18n="subtitle">Discover irresistible dessert and snack recipes</p>
+
+      <div id="loginForm" class="landing-form">
+        <div class="input-group">
+          <span class="input-icon">👤</span>
+          <input type="text" id="loginUsername" placeholder="Your name" data-i18n-ph="login_ph" maxlength="20" autocomplete="off">
+        </div>
+        <button class="btn-primary" onclick="handleLogin()" data-i18n="login_btn">Start cooking 🍳</button>
+      </div>
+
+      <div id="registerForm" class="landing-form" style="display:none;">
+        <div class="input-group">
+          <span class="input-icon">👤</span>
+          <input type="text" id="regUsername" placeholder="Pick a name" data-i18n-ph="reg_name_ph" maxlength="20" autocomplete="off">
+        </div>
+        <div class="input-group">
+          <span class="input-icon">🔒</span>
+          <input type="password" id="regPassword" placeholder="Create a password" data-i18n-ph="reg_pass_ph" maxlength="20" autocomplete="off">
+        </div>
+        <button class="btn-primary" onclick="handleRegister()" data-i18n="register_btn">Create account ✨</button>
+      </div>
+
+      <div id="landingToggle" class="landing-toggle">
+        No tienes cuenta? <a onclick="toggleAuthForm()">Registrate</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ APP ============ -->
+  <div id="appContainer" class="app">
+    <header class="header">
+      <div class="header-left">
+        <span class="header-logo">🧁</span>
+        <span class="header-brand">RecetApp</span>
+      </div>
+      <div class="header-right">
+        <button class="lang-toggle" onclick="toggleLanguage()" id="langToggle" title="Language / Idioma">ES</button>
+        <button class="dark-toggle" onclick="toggleDarkMode()" id="darkToggle" title="Modo oscuro">🌙</button>
+        <span id="headerUser" class="header-user"></span>
+        <button class="nav-btn active" onclick="showScreen('home')" id="navHome" title="Inicio">🏠</button>
+        <button class="nav-btn" onclick="showScreen('favorites')" id="navFavs" title="Favoritos">❤️</button>
+        <button class="nav-btn" onclick="showScreen('profile')" id="navProfile" title="Perfil">👤</button>
+      </div>
+    </header>
+
+    <main class="main">
+
+      <!-- HOME -->
+      <div id="screenHome" class="screen active">
+        <div class="welcome-banner">
+          <p class="welcome-text" data-i18n="hello">Hola,</p>
+          <h2 class="welcome-name" id="welcomeName"></h2>
+          <p class="welcome-sub" data-i18n="what_cook">¿Qué te gustaría cocinar hoy?</p>
+        </div>
+
+        <h3 class="section-title" data-i18n="categories">📂 Categorías</h3>
+        <div class="categories-grid">
+          <div class="category-card" onclick="selectCategory('postres')" id="catPostres">
+            <span class="category-emoji">🍰</span>
+            <span class="category-name" data-i18n="cat_desserts">Postres</span>
+          </div>
+          <div class="category-card" onclick="selectCategory('picoteo_dulce')" id="catDulces">
+            <span class="category-emoji">🍩</span>
+            <span class="category-name" data-i18n="cat_sweet">Piqueo Dulce</span>
+          </div>
+          <div class="category-card" onclick="selectCategory('picoteo_salado')" id="catSalado">
+            <span class="category-emoji">🍕</span>
+            <span class="category-name" data-i18n="cat_savory">Piqueo Salado</span>
+          </div>
+        </div>
+
+        <h3 class="section-title" data-i18n="quick">⚡ Acciones rápidas</h3>
+        <div class="quick-actions">
+          <button class="quick-action" onclick="startRandomRecipe()">
+            <div class="quick-action-icon orange">🎲</div>
+            <div class="quick-action-text">
+              <h4 data-i18n="surprise">Surprise Me</h4>
+              <p data-i18n="surprise_sub">Receta aleatoria</p>
+            </div>
+          </button>
+          <button class="quick-action" onclick="showScreen('favorites')">
+            <div class="quick-action-icon yellow">⭐</div>
+            <div class="quick-action-text">
+              <h4 data-i18n="my_kitchen_btn">Mi Cocina</h4>
+              <p><span id="favCount">0</span> <span data-i18n="saved_suffix">recetas guardadas</span></p>
+            </div>
+          </button>
+        </div>
+
+        <h3 class="section-title" data-i18n="popular">🔥 Recetas populares</h3>
+        <div id="popularRecipes">
+          <div class="loading" style="padding:30px;">
+            <div class="loading-spinner"></div>
+            <p class="loading-text" data-i18n="loading_recipes">Cargando recetas...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- SELECTION -->
+      <div id="screenSelection" class="screen">
+        <div class="steps-indicator" id="stepsIndicator">
+          <div class="step-dot active" id="step1">1</div>
+          <div class="step-line" id="line1"></div>
+          <div class="step-dot" id="step2">2</div>
+          <div class="step-line" id="line2"></div>
+          <div class="step-dot" id="step3">3</div>
+        </div>
+
+        <!-- Step 1: Ingredientes -->
+        <div id="selectionStep1" class="selection-card">
+          <h3 class="selection-title" data-i18n="sel_ing">🥗 Selecciona tus ingredientes</h3>
+          <p class="selection-desc" data-i18n="sel_ing_sub">Elige los que tengas disponibles (puedes saltar este paso)</p>
+          <div class="ingredients-grid" id="ingredientsGrid"></div>
+          <div class="step-nav">
+            <button class="btn-secondary" onclick="showScreen('home')" data-i18n="cancel">Cancelar</button>
+            <button class="btn-primary" onclick="goToStep(2)" data-i18n="next">Siguiente →</button>
+          </div>
+        </div>
+
+        <!-- Step 2: Filtros avanzados -->
+        <div id="selectionStep2" class="selection-card" style="display:none;">
+          <h3 class="selection-title" data-i18n="adjust">⚙️ Ajusta tu búsqueda</h3>
+          <p class="selection-desc" data-i18n="adjust_sub">Filtra por tiempo, dificultad y estilo de cocina</p>
+          <div class="filters-grid">
+            <div class="filter-group">
+              <label data-i18n="time">⏱️ Tiempo</label>
+              <select id="filterTime">
+                <option value="any" data-i18n="time_any">Cualquier tiempo</option>
+                <option value="quick" data-i18n="time_quick">Rápido (&lt;20 min)</option>
+                <option value="medium" data-i18n="time_medium">Moderado (20-45 min)</option>
+                <option value="long" data-i18n="time_long">Elaborado (45+ min)</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label data-i18n="difficulty">📊 Dificultad</label>
+              <select id="filterDifficulty">
+                <option value="any" data-i18n="diff_any">Cualquier nivel</option>
+                <option value="easy" data-i18n="diff_easy">Fácil</option>
+                <option value="medium" data-i18n="diff_medium">Media</option>
+                <option value="hard" data-i18n="diff_hard">Difícil</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label data-i18n="servings">🍽️ Porciones</label>
+              <select id="filterServings">
+                <option value="any" data-i18n="serv_any">Cualquier cantidad</option>
+                <option value="small" data-i18n="serv_small">1-2 personas</option>
+                <option value="medium" data-i18n="serv_medium">3-4 personas</option>
+                <option value="large" data-i18n="serv_large">5+ personas</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label data-i18n="cuisine">🌍 Cocina</label>
+              <select id="filterArea">
+                <option value="any" data-i18n="cuisine_any">Todas las cocinas</option>
+                <option value="Italian">Italiana</option>
+                <option value="Mexican">Mexicana</option>
+                <option value="American">Americana</option>
+                <option value="French">Francesa</option>
+                <option value="Chinese">China</option>
+                <option value="Japanese">Japonesa</option>
+                <option value="Indian">India</option>
+                <option value="Thai">Tailandesa</option>
+                <option value="Spanish">Española</option>
+                <option value="British">Británica</option>
+                <option value="Greek">Griega</option>
+                <option value="Turkish">Turca</option>
+                <option value="Moroccan">Marroquí</option>
+                <option value="Vietnamese">Vietnamita</option>
+                <option value="Korean">Coreana</option>
+                <option value="Brazilian">Brasileña</option>
+              </select>
+            </div>
+          </div>
+          <div class="step-nav">
+            <button class="btn-secondary" onclick="goToStep(1)" data-i18n="back">← Atrás</button>
+            <button class="btn-primary" onclick="showResults()" data-i18n="search">Buscar recetas 🔍</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RESULTS -->
+      <div id="screenResults" class="screen">
+        <div class="results-header">
+          <h2 class="section-title" style="justify-content:center;" data-i18n="results_title">🎯 Recetas para ti</h2>
+          <p class="results-count" id="resultsCount"></p>
+        </div>
+        <div id="resultsContainer"></div>
+        <div class="step-nav" style="margin-top:16px;">
+          <button class="btn-secondary" onclick="goToStep(1)" data-i18n="new_search">🔄 Nueva búsqueda</button>
+          <button class="btn-primary" onclick="showScreen('home')" data-i18n="home">🏠 Inicio</button>
+        </div>
+      </div>
+
+      <!-- DETAIL -->
+      <div id="screenDetail" class="screen">
+        <div id="detailContent"></div>
+      </div>
+
+      <!-- FAVORITES -->
+      <div id="screenFavorites" class="screen">
+        <h2 class="section-title" data-i18n="kitchen_title">❤️ Mi Cocina</h2>
+        <div id="favoritesContainer"></div>
+      </div>
+
+      <!-- PROFILE -->
+      <div id="screenProfile" class="screen">
+        <div class="selection-card" style="text-align:center;">
+          <div style="font-size:4rem;margin-bottom:8px;">👤</div>
+          <h2 class="selection-title" id="profileName"></h2>
+          <p class="selection-desc" data-i18n="member">Miembro de RecetApp</p>
+          <div style="display:flex;gap:12px;margin:20px 0;">
+            <div style="flex:1;background:var(--bg);border-radius:var(--radius-sm);padding:16px;">
+              <div style="font-size:1.5rem;font-weight:700;color:var(--primary);" id="profileFavCount">0</div>
+              <div style="font-size:0.7rem;color:var(--text-light);" data-i18n="favorites">Favoritos</div>
+            </div>
+            <div style="flex:1;background:var(--bg);border-radius:var(--radius-sm);padding:16px;">
+              <div style="font-size:1.5rem;font-weight:700;color:var(--secondary);">🍪</div>
+              <div style="font-size:0.7rem;color:var(--text-light);" data-i18n="desserts">Postres</div>
+            </div>
+          </div>
+          <button class="btn-secondary" onclick="handleLogout()" style="width:100%;margin-top:8px;" data-i18n="logout">
+            Cerrar sesión 👋
+          </button>
+        </div>
+      </div>
+
+      <!-- LOADING -->
+      <div id="loadingScreen" class="loading" style="display:none;">
+        <div class="loading-spinner"></div>
+        <p class="loading-text" id="loadingText">Buscando las mejores recetas...</p>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/i18n.js"></script>
+  <script src="js/traduccion.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/algoritmo.js"></script>
+  <script src="js/favoritos.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    let currentScreen = 'home';
+    let lastScreen = 'home';
+    let currentCategory = null;
+    let selectedIngredients = [];
+    let currentRecipe = null;
+
+    const INGREDIENTS_LIST = [
+      { id: 'chocolate', emoji: '🍫', name: 'Chocolate', name_en: 'Chocolate' },
+      { id: 'leche', emoji: '🥛', name: 'Leche', name_en: 'Milk' },
+      { id: 'huevo', emoji: '🥚', name: 'Huevo', name_en: 'Egg' },
+      { id: 'azucar', emoji: '🧂', name: 'Azúcar', name_en: 'Sugar' },
+      { id: 'harina', emoji: '🌾', name: 'Harina', name_en: 'Flour' },
+      { id: 'mantequilla', emoji: '🧈', name: 'Mantequilla', name_en: 'Butter' },
+      { id: 'queso', emoji: '🧀', name: 'Queso', name_en: 'Cheese' },
+      { id: 'fresa', emoji: '🍓', name: 'Fresa', name_en: 'Strawberry' },
+      { id: 'platano', emoji: '🍌', name: 'Plátano', name_en: 'Banana' },
+      { id: 'manzana', emoji: '🍎', name: 'Manzana', name_en: 'Apple' },
+      { id: 'limon', emoji: '🍋', name: 'Limón', name_en: 'Lemon' },
+      { id: 'canela', emoji: '🪵', name: 'Canela', name_en: 'Cinnamon' },
+      { id: 'vainilla', emoji: '🌸', name: 'Vainilla', name_en: 'Vanilla' },
+      { id: 'nuez', emoji: '🥜', name: 'Nueces', name_en: 'Nuts' },
+      { id: 'miel', emoji: '🍯', name: 'Miel', name_en: 'Honey' },
+      { id: 'coco', emoji: '🥥', name: 'Coco', name_en: 'Coconut' },
+      { id: 'arroz', emoji: '🍚', name: 'Arroz', name_en: 'Rice' },
+      { id: 'avena', emoji: '🥣', name: 'Avena', name_en: 'Oats' },
+      { id: 'cafe', emoji: '☕', name: 'Café', name_en: 'Coffee' },
+      { id: 'frutas', emoji: '🍇', name: 'Frutas', name_en: 'Fruits' },
+      { id: 'nueces', emoji: '🌰', name: 'Frutos Secos', name_en: 'Dried Nuts' },
+      { id: 'crema', emoji: '🍦', name: 'Crema', name_en: 'Cream' },
+      { id: 'pimienta', emoji: '🌶️', name: 'Pimienta/Chile', name_en: 'Pepper/Chili' },
+      { id: 'ajo', emoji: '🧄', name: 'Ajo', name_en: 'Garlic' },
+      { id: 'cebolla', emoji: '🧅', name: 'Cebolla', name_en: 'Onion' },
+      { id: 'tomate', emoji: '🍅', name: 'Tomate', name_en: 'Tomato' },
+      { id: 'pasta', emoji: '🍝', name: 'Pasta', name_en: 'Pasta' },
+      { id: 'pan', emoji: '🍞', name: 'Pan', name_en: 'Bread' },
+      { id: 'carne', emoji: '🥩', name: 'Carne', name_en: 'Beef' },
+      { id: 'pollo', emoji: '🍗', name: 'Pollo', name_en: 'Chicken' },
+      { id: 'cerdo', emoji: '🥓', name: 'Cerdo', name_en: 'Pork' },
+      { id: 'marisco', emoji: '🦐', name: 'Mariscos', name_en: 'Seafood' },
+      { id: 'verdura', emoji: '🥬', name: 'Verduras', name_en: 'Vegetables' },
+      { id: 'aceite', emoji: '🫒', name: 'Aceite', name_en: 'Oil' },
+      { id: 'curry', emoji: '🍛', name: 'Curry', name_en: 'Curry' }
+    ];
+
+    // ======== INIT ========
+    window.addEventListener('DOMContentLoaded', () => {
+      I18n.init();
+      applyLanguage();
+      initDarkMode();
+      if (Auth.isLoggedIn()) enterApp();
+    });
+
+    // ======== LANGUAGE ========
+    function toggleLanguage() {
+      I18n.toggle();
+      applyLanguage();
+      if (document.getElementById('appContainer').classList.contains('active')) {
+        renderIngredients();
+        if (currentScreen === 'detail' && currentRecipe) {
+          viewRecipe(currentRecipe.idMeal);
+        } else if (currentScreen === 'favorites') {
+          renderFavorites();
+        } else if (currentScreen === 'profile') {
+          showScreen('profile');
+        }
+      }
+    }
+
+    function applyLanguage() {
+      const lang = I18n.getLang();
+      document.documentElement.lang = lang;
+      document.title = lang === 'en' ? 'RecetApp - Dessert and Snack Recipes' : 'RecetApp - Recetas de Postres y Piqueos';
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        el.textContent = I18n.t(el.getAttribute('data-i18n'));
+      });
+      document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+        el.placeholder = I18n.t(el.getAttribute('data-i18n-ph'));
+      });
+      const label = lang === 'es' ? 'EN' : 'ES';
+      const b1 = document.getElementById('langToggle');
+      const b2 = document.getElementById('langToggleLanding');
+      if (b1) b1.textContent = label;
+      if (b2) b2.textContent = label;
+      updateLandingToggle();
+    }
+
+    function updateLandingToggle() {
+      const login = document.getElementById('loginForm');
+      const toggle = document.getElementById('landingToggle');
+      if (!login || !toggle) return;
+      const isLogin = login.style.display !== 'none';
+      if (isLogin) {
+        toggle.innerHTML = I18n.t('no_account') + ' <a onclick="toggleAuthForm()">' + I18n.t('register_link') + '</a>';
+      } else {
+        toggle.innerHTML = I18n.t('have_account') + ' <a onclick="toggleAuthForm()">' + I18n.t('login_link') + '</a>';
+      }
+    }
+
+    function uiTimeLabel(minutes) {
+      if (I18n.getLang() === 'en') {
+        if (minutes <= 20) return 'Quick';
+        if (minutes <= 45) return 'Moderate';
+        return 'Elaborate';
+      }
+      return RecipeAlgorithm.getTimeLabel(minutes);
+    }
+
+    function uiDiffLabel(diff) {
+      if (I18n.getLang() === 'en') {
+        const m = { easy: 'Easy', medium: 'Medium', hard: 'Hard' };
+        return m[diff] || diff;
+      }
+      return RecipeAlgorithm.getDifficultyLabel(diff);
+    }
+
+    // ======== DARK MODE ========
+    function initDarkMode() {
+      const saved = localStorage.getItem('recetapp_dark');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const isDark = saved !== null ? saved === 'true' : prefersDark;
+      applyDarkMode(isDark);
+    }
+
+    function toggleDarkMode() {
+      const isDark = document.body.classList.toggle('dark-mode');
+      localStorage.setItem('recetapp_dark', isDark);
+      applyDarkMode(isDark);
+    }
+
+    function applyDarkMode(isDark) {
+      if (isDark) {
+        document.body.classList.add('dark-mode');
+      } else {
+        document.body.classList.remove('dark-mode');
+      }
+      const btn = document.getElementById('darkToggle');
+      const btnLanding = document.getElementById('darkToggleLanding');
+      const icon = isDark ? '☀️' : '🌙';
+      if (btn) btn.textContent = icon;
+      if (btnLanding) btnLanding.textContent = icon;
+    }
+
+    // ======== AUTH ========
+    function toggleAuthForm() {
+      const login = document.getElementById('loginForm');
+      const reg = document.getElementById('registerForm');
+      const toggle = document.getElementById('landingToggle');
+      const isLogin = login.style.display !== 'none';
+      if (isLogin) {
+        login.style.display = 'none';
+        reg.style.display = 'flex';
+      } else {
+        login.style.display = 'flex';
+        reg.style.display = 'none';
+      }
+      updateLandingToggle();
+    }
+
+    function handleLogin() {
+      const username = document.getElementById('loginUsername').value.trim();
+      if (!username) { showToast(I18n.t('toast_name')); return; }
+      Auth.login(username);
+      enterApp();
+    }
+
+    function handleRegister() {
+      const username = document.getElementById('regUsername').value.trim();
+      const password = document.getElementById('regPassword').value.trim();
+      if (!username || !password) { showToast(I18n.t('toast_fields')); return; }
+      if (password.length < 4) { showToast(I18n.t('toast_pass')); return; }
+      Auth.login(username);
+      enterApp();
+    }
+
+    function handleLogout() {
+      Auth.logout();
+      document.getElementById('appContainer').classList.remove('active');
+      document.getElementById('landing').style.display = 'flex';
+      document.getElementById('loginUsername').value = '';
+      showToast(I18n.t('toast_logout'));
+    }
+
+    function enterApp() {
+      document.getElementById('landing').style.display = 'none';
+      document.getElementById('appContainer').classList.add('active');
+      document.getElementById('welcomeName').textContent = Auth.getUsername();
+      document.getElementById('headerUser').textContent = Auth.getUsername();
+      updateFavCount();
+      showScreen('home');
+      loadPopularRecipes();
+      renderIngredients();
+    }
+
+    // ======== NAVIGATION ========
+    function showScreen(screen) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      currentScreen = screen;
+
+      const screenMap = {
+        home: ['screenHome', 'navHome'],
+        selection: ['screenSelection', null],
+        results: ['screenResults', null],
+        detail: ['screenDetail', null],
+        favorites: ['screenFavorites', 'navFavs'],
+        profile: ['screenProfile', 'navProfile']
+      };
+
+      const [screenId, navId] = screenMap[screen] || ['', ''];
+      if (screenId) document.getElementById(screenId).classList.add('active');
+      if (navId) document.getElementById(navId).classList.add('active');
+
+      if (screen === 'favorites') renderFavorites();
+      if (screen === 'profile') {
+        document.getElementById('profileName').textContent = Auth.getUsername();
+        document.getElementById('profileFavCount').textContent = Favoritos.count();
+      }
+    }
+
+    function updateFavCount() {
+      document.getElementById('favCount').textContent = Favoritos.count();
+    }
+
+    // ======== CATEGORIES ========
+    function selectCategory(cat) {
+      currentCategory = cat;
+      selectedIngredients = [];
+      document.querySelectorAll('.category-card').forEach(c => c.classList.remove('selected'));
+      const catMap = { postres: 'catPostres', picoteo_dulce: 'catDulces', picoteo_salado: 'catSalado' };
+      document.getElementById(catMap[cat]).classList.add('selected');
+      resetSelections();
+      goToStep(1);
+      showScreen('selection');
+    }
+
+    function resetSelections() {
+      document.querySelectorAll('.ingredient-chip').forEach(c => c.classList.remove('selected'));
+      document.getElementById('filterTime').value = 'any';
+      document.getElementById('filterDifficulty').value = 'any';
+      document.getElementById('filterServings').value = 'any';
+      document.getElementById('filterArea').value = 'any';
+    }
+
+    // ======== INGREDIENTS ========
+    function renderIngredients() {
+      const grid = document.getElementById('ingredientsGrid');
+      if (!grid) return;
+      const lang = I18n.getLang();
+      grid.innerHTML = INGREDIENTS_LIST.map(ing => `
+        <div class="ingredient-chip${selectedIngredients.indexOf(ing.id) !== -1 ? ' selected' : ''}" onclick="toggleIngredient('${ing.id}')" id="ing-${ing.id}">
+          <span class="emoji">${ing.emoji}</span>
+          <span class="name">${lang === 'en' ? ing.name_en : ing.name}</span>
+          <span class="check">✓</span>
+        </div>
+      `).join('');
+    }
+
+    function toggleIngredient(id) {
+      const idx = selectedIngredients.indexOf(id);
+      if (idx === -1) {
+        selectedIngredients.push(id);
+        document.getElementById(`ing-${id}`).classList.add('selected');
+      } else {
+        selectedIngredients.splice(idx, 1);
+        document.getElementById(`ing-${id}`).classList.remove('selected');
+      }
+    }
+
+    // ======== STEPS ========
+    function goToStep(step) {
+      document.getElementById('selectionStep1').style.display = step === 1 ? 'block' : 'none';
+      document.getElementById('selectionStep2').style.display = step === 2 ? 'block' : 'none';
+      for (let i = 1; i <= 3; i++) {
+        const dot = document.getElementById(`step${i}`);
+        dot.classList.remove('active', 'done');
+        if (i < step) dot.classList.add('done');
+        if (i === step) dot.classList.add('active');
+      }
+      document.getElementById('line1').classList.toggle('done', step > 1);
+      document.getElementById('line2').classList.toggle('done', step > 2);
+    }
+
+    // ======== RESULTS ========
+    async function showResults() {
+      setLoading(true, I18n.t('loading_searching'));
+
+      const filters = {
+        time: document.getElementById('filterTime').value,
+        difficulty: document.getElementById('filterDifficulty').value,
+        servings: document.getElementById('filterServings').value,
+        area: document.getElementById('filterArea').value
+      };
+
+      try {
+        const results = await RecipeAlgorithm.getRecommendations({
+          category: currentCategory,
+          ingredients: selectedIngredients,
+          filters
+        });
+
+        let filteredResults = results;
+        if (filters.area && filters.area !== 'any') {
+          filteredResults = results.filter(r => r.strArea === filters.area);
+          if (filteredResults.length === 0) {
+            filteredResults = results.slice(0, 2);
+          }
+        }
+
+        setLoading(false);
+
+        if (filteredResults.length === 0) {
+          document.getElementById('resultsContainer').innerHTML = `
+            <div class="no-results">
+              <span class="emoji">😔</span>
+              <h3>${I18n.t('no_results_t')}</h3>
+              <p>${I18n.t('no_results_p')}</p>
+            </div>
+          `;
+        } else {
+          document.getElementById('resultsCount').textContent =
+            filteredResults.length === 1 ? I18n.t('result_one') : `${filteredResults.length} ${I18n.t('result_many')}`;
+          document.getElementById('resultsContainer').innerHTML =
+            filteredResults.map((r, i) => renderRecipeCard(r, i)).join('');
+        }
+
+        showScreen('results');
+      } catch (err) {
+        setLoading(false);
+        showToast(I18n.t('toast_search_error'));
+        console.error(err);
+      }
+    }
+
+    function renderRecipeCard(meal, index = 0) {
+      const isFav = Favoritos.isFavorite(meal.idMeal);
+      const delay = index * 0.1;
+      const time = RecipeAlgorithm.estimateTime(meal);
+      const diff = RecipeAlgorithm.estimateDifficulty(meal);
+      const diffLabel = uiDiffLabel(diff);
+      return `
+        <div class="recipe-card" onclick="viewRecipe('${meal.idMeal}')" style="animation-delay:${delay}s;">
+          <img class="recipe-card-image" src="${meal.strMealThumb}" alt="${meal.strMeal}" loading="lazy"
+               onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 400 200%22><rect fill=%22%23f0e6de%22 width=%22400%22 height=%22200%22/><text x=%2250%25%22 y=%2250%25%22 font-size=%2260%22 text-anchor=%22middle%22 dy=%22.3em%22>🧁</text></svg>'">
+          <div class="recipe-card-body">
+            <h3 class="recipe-card-title">${meal.strMeal || I18n.t('no_name')}</h3>
+            <div class="recipe-card-meta">
+              <span class="meta-badge time">⏱️ ~${time} min</span>
+              <span class="meta-badge difficulty">📊 ${diffLabel}</span>
+            </div>
+            <div class="recipe-card-tags">
+              ${meal.strCategory ? `<span class="tag">${meal.strCategory}</span>` : ''}
+              ${meal.strArea ? `<span class="tag">🌍 ${meal.strArea}</span>` : ''}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // ======== RECIPE DETAIL ========
+    async function viewRecipe(id) {
+      lastScreen = currentScreen;
+      const lang = I18n.getLang();
+      setLoading(true, I18n.t('loading_recipe'));
+
+      try {
+        const meal = await RecipeAPI.getMealById(id);
+        if (!meal) {
+          setLoading(false);
+          showToast(I18n.t('toast_not_found'));
+          return;
+        }
+
+        let display = meal;
+        let ingredients = RecipeAPI.getMealIngredients(meal);
+        let steps = RecipeAPI.getMealSteps(meal);
+        let area = meal.strArea || '';
+        let category = meal.strCategory || '';
+        let tags = meal.strTags || '';
+
+        if (lang === 'es') {
+          setLoading(true, I18n.t('loading_translating'));
+          const translated = await Traduccion.translateMeal(meal);
+          display = translated;
+          currentRecipe = translated;
+          ingredients = translated.ingredients_ES || ingredients;
+          steps = translated.strInstructions_ES
+            ? translated.strInstructions_ES.split(/\r?\n/).map(s => s.trim()).filter(s => s.length > 3)
+            : steps;
+          area = translated.strArea_ES || area;
+          category = translated.strCategory_ES || category;
+          tags = translated.strTags_ES || tags;
+        } else {
+          currentRecipe = meal;
+        }
+
+        const isFav = Favoritos.isFavorite(meal.idMeal);
+        const time = RecipeAlgorithm.estimateTime(meal);
+        const diff = RecipeAlgorithm.estimateDifficulty(meal);
+        const diffLabel = uiDiffLabel(diff);
+
+        document.getElementById('detailContent').innerHTML = `
+          <div class="detail-hero">
+            <img src="${meal.strMealThumb}" alt="${meal.strMeal}"
+                 onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 400 280%22><rect fill=%22%23f0e6de%22 width=%22400%22 height=%22280%22/><text x=%2250%25%22 y=%2250%25%22 font-size=%2280%22 text-anchor=%22middle%22 dy=%22.3em%22>🧁</text></svg>'">
+            <div class="detail-hero-overlay">
+              <h2 class="detail-hero-title">${meal.strMeal}</h2>
+            </div>
+          </div>
+
+          <div class="detail-actions">
+            <button class="btn-primary" onclick="toggleFavorite()" id="btnFav">
+              ${isFav ? I18n.t('fav_remove') : I18n.t('fav_add')}
+            </button>
+            <button class="btn-secondary" onclick="goBack()">${I18n.t('back_btn')}</button>
+          </div>
+
+          <div class="recipe-card-meta" style="margin-bottom:20px;flex-wrap:wrap;">
+            <span class="meta-badge time">⏱️ ~${time} min</span>
+            <span class="meta-badge difficulty">📊 ${diffLabel}</span>
+            <span class="meta-badge" style="background:rgba(108,92,231,0.1);color:#6C5CE7;">🌍 ${area}</span>
+            ${category ? `<span class="meta-badge" style="background:rgba(253,203,110,0.2);color:#E17055;">📂 ${category}</span>` : ''}
+          </div>
+
+          ${tags ? `<div style="margin-bottom:16px;"><span style="font-size:0.75rem;color:var(--text-light);">🏷️ ${tags}</span></div>` : ''}
+
+          ${meal.strYoutube ? `
+            <a href="${meal.strYoutube}" target="_blank" class="btn-secondary" style="display:block;text-align:center;text-decoration:none;margin-bottom:20px;">
+              ${I18n.t('video')}
+            </a>
+          ` : ''}
+
+          <div class="detail-section">
+            <h3 class="detail-section-title">${I18n.t('ingredients')} (${ingredients.length})</h3>
+            <ul class="ingredients-list">
+              ${ingredients.map((ing, i) => `
+                <li>
+                  <div class="ingredient-check" onclick="toggleIngCheck(this)" id="ingCheck-${i}">✓</div>
+                  <span><strong>${ing.measure}</strong> ${(I18n.getLang() === 'es' ? (ing.name_ES || ing.name) : ing.name)}</span>
+                </li>
+              `).join('')}
+            </ul>
+          </div>
+
+          <div class="detail-section">
+            <h3 class="detail-section-title">${I18n.t('preparation')}</h3>
+            <ol class="steps-list">
+              ${steps.map((step, i) => `
+                <li>
+                  <span class="step-number">${i + 1}</span>
+                  <span>${step}</span>
+                </li>
+              `).join('')}
+            </ol>
+          </div>
+
+          <div style="margin-top:20px;padding:16px;background:var(--bg);border-radius:var(--radius-sm);font-size:0.75rem;color:var(--text-light);text-align:center;">
+            ${I18n.t('est_note')}
+          </div>
+        `;
+
+        setLoading(false);
+        showScreen('detail');
+      } catch (err) {
+        setLoading(false);
+        showToast(I18n.t('toast_recipe_error'));
+        console.error(err);
+      }
+    }
+
+    function toggleIngCheck(el) {
+      el.classList.toggle('checked');
+    }
+
+    function toggleFavorite() {
+      if (!currentRecipe) return;
+      const added = Favoritos.toggle(currentRecipe);
+      const btn = document.getElementById('btnFav');
+      btn.textContent = added ? I18n.t('fav_remove') : I18n.t('fav_add');
+      showToast(added ? I18n.t('toast_fav_add') : I18n.t('toast_fav_remove'));
+      updateFavCount();
+    }
+
+    function goBack() {
+      showScreen(lastScreen === 'detail' ? 'home' : lastScreen);
+    }
+
+    // ======== FAVORITES ========
+    function renderFavorites() {
+      const favs = Favoritos.getAll();
+      const container = document.getElementById('favoritesContainer');
+
+      if (favs.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <span class="emoji">🍳</span>
+            <h3>${I18n.t('empty_t')}</h3>
+            <p>${I18n.t('empty_p')}</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = `
+        <div class="favorites-grid">
+          ${favs.map(fav => `
+            <div class="fav-card" onclick="viewRecipe('${fav.idMeal}')">
+              <button class="fav-remove" onclick="event.stopPropagation();removeFav('${fav.idMeal}')">✕</button>
+              <img src="${fav.strMealThumb}" alt="${fav.strMeal}" loading="lazy"
+                   onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 200 120%22><rect fill=%22%23f0e6de%22 width=%22200%22 height=%22120%22/><text x=%2250%25%22 y=%2250%25%22 font-size=%2240%22 text-anchor=%22middle%22 dy=%22.3em%22>🧁</text></svg>'">
+              <div class="fav-card-body">
+                <h4 class="fav-card-title">${fav.strMeal}</h4>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    function removeFav(id) {
+      Favoritos.remove(id);
+      renderFavorites();
+      updateFavCount();
+      showToast(I18n.t('toast_fav_deleted'));
+    }
+
+    // ======== RANDOM ========
+    async function startRandomRecipe() {
+      setLoading(true, I18n.t('loading_random'));
+      try {
+        const meals = await RecipeAPI.getRandomMeals(1);
+        setLoading(false);
+        if (meals.length > 0) {
+          viewRecipe(meals[0].idMeal);
+        } else {
+          showToast(I18n.t('toast_random_error'));
+        }
+      } catch (err) {
+        setLoading(false);
+        showToast(I18n.t('toast_conn_error'));
+      }
+    }
+
+    // ======== POPULAR ========
+    async function loadPopularRecipes() {
+      try {
+        const meals = await RecipeAPI.getMealsByCategory('Dessert');
+        const popular = meals.slice(0, 4);
+        if (popular.length === 0) {
+          document.getElementById('popularRecipes').innerHTML =
+            '<p style="color:var(--text-light);font-size:0.85rem;">' + I18n.t('toast_popular_error') + '</p>';
+          return;
+        }
+        const detailed = [];
+        for (const m of popular) {
+          try {
+            const d = await RecipeAPI.getMealById(m.idMeal);
+            if (d) detailed.push(d);
+          } catch (e) {
+            detailed.push(m);
+          }
+        }
+        document.getElementById('popularRecipes').innerHTML =
+          detailed.map((r, i) => renderRecipeCard(r, i)).join('');
+      } catch (err) {
+        document.getElementById('popularRecipes').innerHTML =
+          '<p style="color:var(--text-light);font-size:0.85rem;">' + I18n.t('toast_popular_error') + '</p>';
+      }
+    }
+
+    // ======== UI ========
+    function setLoading(show, text) {
+      document.getElementById('loadingScreen').style.display = show ? 'flex' : 'none';
+      if (text) document.getElementById('loadingText').textContent = text;
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2500);
+    }
+
+    // ======== KEYBOARD ========
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && document.getElementById('landing').style.display !== 'none') {
+        if (document.getElementById('registerForm').style.display !== 'none') {
+          handleRegister();
+        } else {
+          handleLogin();
+        }
+      }
+    });
+  </script>
+</body>
+</html>
